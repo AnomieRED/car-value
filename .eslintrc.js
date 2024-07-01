@@ -1,3 +1,3 @@
-module.exports = {
-  'extends': '@lab325/eslint-config',
-};
+// module.exports = {
+//   'extends': '@lab325/eslint-config',
+// };

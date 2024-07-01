@@ -10,13 +10,15 @@ export class UsersService {
     private userRepo: Repository<User>) {
   }
 
- async create(email: string, password: string) {
+  async create(email: string, password: string): Promise<User> {
     const user = await this.userRepo.create({ email, password });
 
     return await this.userRepo.save(user);
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<User> {
+    if (!id) return null;
+
     const user = await this.userRepo.findOne({ where: { id } });
 
     if (!user) throw new NotFoundException('User not found');
@@ -24,17 +26,17 @@ export class UsersService {
     return user;
   }
 
-  async findAll(email: string) {
+  async findAll(email: string): Promise<User[]> {
     return await this.userRepo.find({ where: { email } });
   }
 
-  async update(id: number, attrs: Partial<User>) {
+  async update(id: number, attrs: Partial<User>): Promise<User> {
     const user = await this.findOne(id);
 
     return await this.userRepo.save(Object.assign(user, attrs));
   }
 
-  async remove(id: number) {
+  async remove(id: number): Promise<User> {
     const user = await this.findOne(id);
 
     return await this.userRepo.remove(user);
