@@ -25,8 +25,25 @@ describe('Authentication System (e2e)', () => {
       .then((res) => {
         const { id, email: currEmail } = res.body;
         expect(id).toBeDefined();
-        expect(currEmail).toEqual(email)
+        expect(currEmail).toEqual(email);
       });
+  });
 
+  it('[/auth/whoami] (POST)', async () => {
+    const email = 'test@whoami.com';
+
+    const res = await request(app.getHttpServer())
+      .post('/auth/signup')
+      .send({ email, password: email })
+      .expect(201);
+
+    const cookie = res.get('Set-Cookie');
+
+    const { body } = await request(app.getHttpServer())
+      .get('/auth/whoami')
+      .set('Cookie', cookie)
+      .expect(200);
+
+    expect(body.email).toEqual(email);
   });
 });

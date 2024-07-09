@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,25 +11,39 @@ import * as process from 'node:process';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: process.env.NODE_ENV === 'test' ? 'test.sqlite' : 'db.sqlite',
-      entities: [__dirname + '/entities/**/*.entity{.ts,.js}'],
-      autoLoadEntities: true,
-      synchronize: true
+    ConfigModule.forRoot({ // NOTE Позволяет использовать переменные окружения во всем приложении
+      isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService], // NOTE Внедряем ConfigService в провайдер
+      useFactory: (config: ConfigService) => { // NOTE Возвращаем объект с настройками для TypeOrmModule.forRoot
+        return {
+          type: 'sqlite',
+          database: config.get<string>('DB_NAME'),
+          entities: [__dirname + '/entities/**/*.entity{.ts,.js}'],
+          autoLoadEntities: true,
+          synchronize: true,
+        };
+      },
+    }),
+    // TypeOrmModule.forRoot({
+    //   type: 'sqlite',
+    //   database: process.env.NODE_ENV === 'test' ? 'test.sqlite' : 'db.sqlite',
+    //   entities: [__dirname + '/entities/**/*.entity{.ts,.js}'],
+    //   autoLoadEntities: true,
+    //   synchronize: true
+    // }),
     UsersModule,
-    ReportsModule
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     { // Добавив в кор модуль, позволит использовать ValidationPipe во всем приложении, при каждом запросе.
       provide: APP_PIPE, // NOTE whitelist - убирает поля которые не описаны в DTO
-      useValue: new ValidationPipe({
-        whitelist: true
-      })
-    }
+      useValue: new ValidationPipe({ whitelist: true }),
+    },
   ],
 })
 export class AppModule {
@@ -40,8 +55,8 @@ export class AppModule {
       session({ // NOTE Добавив в кор модуль, позволит использовать сессии во всем приложении, при каждом запросе.
         secret: 'top-secret-key',
         resave: false,
-        saveUninitialized: false
-      })
+        saveUninitialized: false,
+      }),
     ).forRoutes('*');
   }
 }
