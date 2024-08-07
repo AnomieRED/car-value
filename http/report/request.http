@@ -1,0 +1,14 @@
+### 1. Create a report
+#### Request
+POST {{url}}/reports
+Content-Type: application/json
+
+{
+  "make": "Toyota",
+  "model": "Corolla",
+  "year": 2019,
+  "price": 20000,
+  "mileage": 10000,
+  "lng": 0,
+  "lat": 0
+}
