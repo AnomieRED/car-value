@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Report } from '../entities/report.entity';
 import { CreateReportDto } from './dtos/create-report.dto';
 import { User } from '../entities/user.entity';
+import { GetEstimateDto } from './dtos/get-estimate.dto';
 
 @Injectable()
 export class ReportsService {
@@ -12,9 +13,36 @@ export class ReportsService {
   ) {
   }
 
+  async getEstimate(query: GetEstimateDto): Promise<any> {
+    const { make, model, lng, lat, year, mileage } = query;
+
+    return await this.repo.createQueryBuilder()
+      .select('AVG(price)', 'price')
+      .where('make = :make', { make })
+      .andWhere('model = :model', { model })
+      .andWhere('lng - :lng BETWEEN -5 AND 5', { lng })
+      .andWhere('lat - :lat BETWEEN -5 AND 5', { lat })
+      .andWhere('year - :year BETWEEN -3 AND 3', { year })
+      .andWhere('isApproved IS TRUE')
+      .orderBy('ABS(mileage - :mileage)', 'DESC')
+      .setParameters({ mileage })
+      .limit(3)
+      .getRawOne();
+  }
+
   async create(reportDto: CreateReportDto, user: User): Promise<Report> {
     const report = this.repo.create(reportDto);
     report.User = user;
+
+    return await this.repo.save(report);
+  }
+
+  async changeApproval(id: string, isApproved: boolean): Promise<Report> {
+    const report = await this.repo.findOne({ where: { id: parseInt(id) } });
+
+    if (!report) throw new NotFoundException('Report not found');
+
+    report.isApproved = isApproved;
 
     return await this.repo.save(report);
   }

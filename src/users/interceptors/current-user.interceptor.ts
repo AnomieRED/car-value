@@ -8,9 +8,10 @@ import { UsersService } from '../users.service';
 import { Observable } from 'rxjs';
 
 
-// При любом запросе, который проходит через этот интерсептор, в request.currentUser будет записан текущий пользователь
+// NOTE: При любом запросе, который проходит через этот интерсептор, в request.currentUser будет записан текущий пользователь
 // Берем из сессии userId и ищем пользователя в базе данных
 // Это позволяет передавать пользователя в каждый метод контроллера
+// NOTE: Важно понимать, что интерсепторы работают после мидлваров и гардов, но до контроллеров
 @Injectable()
 export class CurrentUserInterceptor implements NestInterceptor {
 

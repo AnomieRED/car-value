@@ -27,6 +27,9 @@ export class Report {
   @Column()
   mileage: number;
 
+  @Column({ default: false })
+  isApproved: boolean;
+
   @ManyToOne(() => User, user => user.Reports)
   User: User;
 }

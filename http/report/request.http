@@ -12,3 +12,16 @@ Content-Type: application/json
   "lng": 0,
   "lat": 0
 }
+
+### 2. Approve a report
+#### Request
+PATCH {{url}}/reports/7
+Content-Type: application/json
+
+{
+  "isApproved": false
+}
+
+### 3. Get all reports
+#### Request
+GET {{url}}/reports?make=Toyota&model=Corolla&year=2019&price=20000&mileage=10000&lng=0&lat=0
